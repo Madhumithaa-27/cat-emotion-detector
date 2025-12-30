@@ -10,10 +10,9 @@ st.set_page_config(
     layout="centered"
 )
 
-# ------------------- THEME -------------------
+# ---------- THEME ----------
 st.markdown("""
 <style>
-
 .stApp {
     background-color: #F8F7BA;
 }
@@ -60,18 +59,17 @@ st.markdown("""
     font-weight: 700;
     color: #004D40;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------- LOAD MODELS -------------------
+# ---------- LOAD MODELS ----------
 image_model = tf.keras.models.load_model("cat_image_model.keras")
 audio_model = tf.keras.models.load_model("cat_audio_model.keras")
 
 IMAGE_CLASSES = ['Happy','Sad','Angry','Surprised','Scared','Disgusted','Normal']
 AUDIO_CLASSES = ['Happy','Angry','Paining','Resting','Warning','Fighting','Mating','Defense','HuntingMind','MotherCall']
 
-# ------------------- PREPROCESS -------------------
+# ---------- PREPROCESS ----------
 def preprocess_image(file):
     img = Image.open(file).convert("RGB")
     img = img.resize((224,224))
@@ -84,28 +82,27 @@ def preprocess_audio(file):
     mfcc = np.mean(mfcc.T, axis=0)
     return np.expand_dims(mfcc, axis=(0,1))
 
-# ------------------- NAVIGATION -------------------
+# ---------- NAV ----------
 menu = st.sidebar.radio("Navigation", ["About", "Predict"])
 
-# ------------------- ABOUT -------------------
+# ---------- ABOUT ----------
 if menu == "About":
     st.title("Cat Emotion Detection System")
 
     st.markdown("""
-<div class="card">
-This system uses deep learning to understand cat emotions from images and audio.
-It analyzes facial expressions, posture, and sound features such as MFCC to classify emotional states.
-The goal is to help cat owners, veterinarians, and researchers understand cat behavior using AI.
-</div>
-""", unsafe_allow_html=True)
+    <div class="card">
+    This system uses deep learning to understand cat emotions from images and audio.
+    It analyzes facial expressions and sound features such as MFCC.
+    The goal is to help cat owners, veterinarians, and researchers understand cat behavior using AI.
+    </div>
+    """, unsafe_allow_html=True)
 
     st.image("https://images.unsplash.com/photo-1592194996308-7b43878e84a6", use_column_width=True)
 
-# ------------------- PREDICT -------------------
+# ---------- PREDICT ----------
 if menu == "Predict":
 
     st.title("Cat Emotion Prediction")
-
     st.markdown("<div class='card'>Upload a cat image or audio to analyze emotions.</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
@@ -143,26 +140,26 @@ if menu == "Predict":
 
             if image_file:
                 st.markdown(f"""
-<div class="result-box">
-IMAGE RESULT<br>
-Emotion: {img_emotion}<br>
-Confidence: {img_conf} %
-</div>
-""", unsafe_allow_html=True)
+                <div class="result-box">
+                IMAGE RESULT<br>
+                Emotion: {img_emotion}<br>
+                Confidence: {img_conf} %
+                </div>
+                """, unsafe_allow_html=True)
 
             if audio_file:
                 st.markdown(f"""
-<div class="result-box">
-AUDIO RESULT<br>
-Emotion: {aud_emotion}<br>
-Confidence: {aud_conf} %
-</div>
-""", unsafe_allow_html=True)
+                <div class="result-box">
+                AUDIO RESULT<br>
+                Emotion: {aud_emotion}<br>
+                Confidence: {aud_conf} %
+                </div>
+                """, unsafe_allow_html=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
 
     st.image("https://images.unsplash.com/photo-1601758064131-59a3bca1f06b", use_column_width=True)
-True)
+
 
 
 
