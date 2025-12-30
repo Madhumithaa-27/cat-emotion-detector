@@ -1,0 +1,7 @@
+streamlit
+tensorflow
+numpy
+pillow
+librosa
+soundfile
+scipy
