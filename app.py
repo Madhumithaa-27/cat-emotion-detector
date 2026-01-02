@@ -10,11 +10,11 @@ st.set_page_config(
     layout="centered"
 )
 
-# ---------- THEME ----------
+# ------------------ THEME ------------------
 st.markdown("""
 <style>
 .stApp {
-    background-color: #F8F7BA;
+    background: linear-gradient(180deg, #F8F7BA, #FFF9E6);
 }
 
 [data-testid="stSidebar"] {
@@ -22,54 +22,58 @@ st.markdown("""
 }
 
 .card {
-    background-color: white;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0px 8px 25px rgba(0,0,0,0.08);
+    background: white;
+    padding: 28px;
+    border-radius: 18px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
     margin-bottom: 25px;
 }
 
-[data-testid="stFileUploader"] {
-    background-color: #FFFBD9;
+.step {
+    background: #FFF3BF;
+    padding: 18px;
     border-radius: 12px;
-    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 6px solid #FFB703;
+}
+
+.result-box {
+    background: linear-gradient(135deg, #D8F3DC, #B7E4C7);
+    padding: 30px;
+    border-radius: 18px;
+    border-left: 8px solid #52B788;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    color: #1B4332;
+    animation: pop 0.4s ease-out;
+}
+
+@keyframes pop {
+  0% {transform: scale(0.7); opacity: 0;}
+  100% {transform: scale(1); opacity: 1;}
 }
 
 .stButton>button {
     background: linear-gradient(135deg, #FFB703, #FB8500);
     color: black;
     border-radius: 12px;
-    padding: 12px 26px;
+    padding: 14px 28px;
     font-size: 16px;
     font-weight: 700;
     border: none;
 }
-
-.stButton>button:hover {
-    background: linear-gradient(135deg, #FB8500, #FFB703);
-}
-
-.result-box {
-    background: linear-gradient(135deg, #E0F7FA, #B2EBF2);
-    padding: 22px;
-    border-radius: 16px;
-    border-left: 8px solid #00ACC1;
-    margin-top: 15px;
-    font-size: 18px;
-    font-weight: 700;
-    color: #004D40;
-}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- LOAD MODELS ----------
+# ------------------ MODELS ------------------
 image_model = tf.keras.models.load_model("cat_image_model.keras")
 audio_model = tf.keras.models.load_model("cat_audio_model.keras")
 
 IMAGE_CLASSES = ['Happy','Sad','Angry','Surprised','Scared','Disgusted','Normal']
 AUDIO_CLASSES = ['Happy','Angry','Paining','Resting','Warning','Fighting','Mating','Defense','HuntingMind','MotherCall']
 
-# ---------- PREPROCESS ----------
+# ------------------ PREPROCESS ------------------
 def preprocess_image(file):
     img = Image.open(file).convert("RGB")
     img = img.resize((224,224))
@@ -82,28 +86,39 @@ def preprocess_audio(file):
     mfcc = np.mean(mfcc.T, axis=0)
     return np.expand_dims(mfcc, axis=(0,1))
 
-# ---------- NAV ----------
+# ------------------ NAV ------------------
 menu = st.sidebar.radio("Navigation", ["About", "Predict"])
 
-# ---------- ABOUT ----------
+# ------------------ ABOUT ------------------
 if menu == "About":
     st.title("Cat Emotion Detection System")
 
     st.markdown("""
-    <div class="card">
-    This system uses deep learning to understand cat emotions from images and audio.
-    It analyzes facial expressions and sound features such as MFCC.
-    The goal is to help cat owners, veterinarians, and researchers understand cat behavior using AI.
-    </div>
-    """, unsafe_allow_html=True)
+<div class="card">
+This web application uses Artificial Intelligence to understand how a cat is feeling by analyzing images and sounds.
+Cats cannot tell us when they are happy, scared, angry, or in pain. Many cat owners struggle to understand their pet’s emotions.
+This system was built to help cat owners, veterinarians, and animal lovers better understand cat behavior using technology.
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("""
+<div class="card">
+<h3>How to Use</h3>
+<div class="step">Step 1: Upload a clear image of a cat</div>
+<div class="step">Step 2: Upload a cat sound (optional)</div>
+<div class="step">Step 3: Click Detect Emotion</div>
+<div class="step">Step 4: The system will display the detected emotion</div>
+</div>
+""", unsafe_allow_html=True)
 
     st.image("https://images.unsplash.com/photo-1592194996308-7b43878e84a6", use_column_width=True)
+    st.image("https://images.unsplash.com/photo-1601758123927-1985e4c92d5a", use_column_width=True)
 
-# ---------- PREDICT ----------
+# ------------------ PREDICT ------------------
 if menu == "Predict":
 
-    st.title("Cat Emotion Prediction")
-    st.markdown("<div class='card'>Upload a cat image or audio to analyze emotions.</div>", unsafe_allow_html=True)
+    st.title("Detect Cat Emotion")
+    st.markdown("<div class='card'>Upload a cat image or sound and click Detect Emotion.</div>", unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
 
@@ -122,43 +137,26 @@ if menu == "Predict":
         else:
             with st.spinner("Analyzing"):
 
+                final_emotion = None
+
                 if image_file:
                     img = preprocess_image(image_file)
                     img_pred = image_model.predict(img)[0]
-                    img_emotion = IMAGE_CLASSES[np.argmax(img_pred)]
-                    img_conf = round(np.max(img_pred) * 100, 2)
+                    final_emotion = IMAGE_CLASSES[np.argmax(img_pred)]
 
                 if audio_file:
                     aud = preprocess_audio(audio_file)
                     aud_pred = audio_model.predict(aud)[0]
-                    aud_emotion = AUDIO_CLASSES[np.argmax(aud_pred)]
-                    aud_conf = round(np.max(aud_pred) * 100, 2)
+                    final_emotion = AUDIO_CLASSES[np.argmax(aud_pred)]
 
-            st.balloons()
+            st.markdown(f"""
+            <div class="result-box">
+            {final_emotion}
+            </div>
+            """, unsafe_allow_html=True)
 
-            st.markdown("<div class='card'>", unsafe_allow_html=True)
+    st.image("https://images.unsplash.com/photo-1518791841217-8f162f1e1131", use_column_width=True)
 
-            if image_file:
-                st.markdown(f"""
-                <div class="result-box">
-                IMAGE RESULT<br>
-                Emotion: {img_emotion}<br>
-                Confidence: {img_conf} %
-                </div>
-                """, unsafe_allow_html=True)
-
-            if audio_file:
-                st.markdown(f"""
-                <div class="result-box">
-                AUDIO RESULT<br>
-                Emotion: {aud_emotion}<br>
-                Confidence: {aud_conf} %
-                </div>
-                """, unsafe_allow_html=True)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    st.image("https://images.unsplash.com/photo-1601758064131-59a3bca1f06b", use_column_width=True)
 
 
 
