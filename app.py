@@ -10,43 +10,53 @@ st.set_page_config(
     layout="centered"
 )
 
-# ------------------ THEME ------------------
+# ------------------ DARK THEME ------------------
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(180deg, #F8F7BA, #FFF9E6);
+    background: linear-gradient(180deg, #0B0B14, #14142B);
+    color: white;
 }
 
 [data-testid="stSidebar"] {
-    background-color: #EFECA3;
+    background-color: #0F0F1E;
 }
 
 .card {
-    background: white;
+    background: linear-gradient(145deg, #1C1C3A, #101022);
     padding: 28px;
     border-radius: 18px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.6);
     margin-bottom: 25px;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-.step {
-    background: #FFF3BF;
-    padding: 18px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    border-left: 6px solid #FFB703;
+.square {
+    background: linear-gradient(135deg, #7F5AF0, #2CB67D);
+    width: 160px;
+    height: 160px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    text-align: center;
+    margin: 10px auto;
 }
 
 .result-box {
-    background: linear-gradient(135deg, #D8F3DC, #B7E4C7);
+    background: linear-gradient(135deg, #2B2B5E, #1B1B38);
     padding: 30px;
     border-radius: 18px;
-    border-left: 8px solid #52B788;
+    border-left: 8px solid #7F5AF0;
     font-size: 26px;
     font-weight: 800;
     text-align: center;
-    color: #1B4332;
+    color: #FFFFFF;
     animation: pop 0.4s ease-out;
+    margin-top: 15px;
 }
 
 @keyframes pop {
@@ -55,13 +65,17 @@ st.markdown("""
 }
 
 .stButton>button {
-    background: linear-gradient(135deg, #FFB703, #FB8500);
-    color: black;
+    background: linear-gradient(135deg, #7F5AF0, #2CB67D);
+    color: white;
     border-radius: 12px;
     padding: 14px 28px;
     font-size: 16px;
     font-weight: 700;
     border: none;
+}
+
+h1, h2, h3, p {
+    color: white;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -87,48 +101,38 @@ def preprocess_audio(file):
     return np.expand_dims(mfcc, axis=(0,1))
 
 # ------------------ NAV ------------------
-menu = st.sidebar.radio("Navigation", ["About", "Predict"])
+menu = st.sidebar.radio("Navigation", ["Home", "Predict"])
 
-# ------------------ ABOUT ------------------
-if menu == "About":
-    st.title("Cat Emotion Detection System")
-
-    st.markdown("""
-<div class="card">
-This web application uses Artificial Intelligence to understand how a cat is feeling by analyzing images and sounds.
-Cats cannot tell us when they are happy, scared, angry, or in pain. Many cat owners struggle to understand their pet’s emotions.
-This system was built to help cat owners, veterinarians, and animal lovers better understand cat behavior using technology.
-</div>
-""", unsafe_allow_html=True)
+# ------------------ HOME ------------------
+if menu == "Home":
+    st.title("Cat Emotion Detector")
 
     st.markdown("""
-<div class="card">
-<h3>How to Use</h3>
-<div class="step">Step 1: Upload a clear image of a cat</div>
-<div class="step">Step 2: Upload a cat sound (optional)</div>
-<div class="step">Step 3: Click Detect Emotion</div>
-<div class="step">Step 4: The system will display the detected emotion</div>
-</div>
-""", unsafe_allow_html=True)
+    <div class="card">
+    This AI system understands how a cat feels by analyzing images and sounds.
+    Cats cannot speak, but their face and voice reveal emotions.
+    This platform helps cat owners recognize happiness, fear, pain, or stress early.
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.image("https://images.unsplash.com/photo-1592194996308-7b43878e84a6", use_column_width=True)
-    st.image("https://images.unsplash.com/photo-1601758123927-1985e4c92d5a", use_column_width=True)
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("<div class='square'>Pet emotions are valid</div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<div class='square'>AI for animal care</div>", unsafe_allow_html=True)
+    with col3:
+        st.markdown("<div class='square'>Understand your cat</div>", unsafe_allow_html=True)
 
 # ------------------ PREDICT ------------------
 if menu == "Predict":
 
-    st.title("Detect Cat Emotion")
-    st.markdown("<div class='card'>Upload a cat image or sound and click Detect Emotion.</div>", unsafe_allow_html=True)
+    st.title("Detect Emotion")
 
-    col1, col2 = st.columns(2)
+    st.markdown("<div class='card'>Upload a cat image or audio to analyze emotions.</div>", unsafe_allow_html=True)
 
-    with col1:
-        image_file = st.file_uploader("Upload Cat Image", type=["jpg","jpeg","png"])
-        if image_file:
-            st.image(image_file, use_column_width=True)
-
-    with col2:
-        audio_file = st.file_uploader("Upload Cat Audio", type=["wav","mp3"])
+    image_file = st.file_uploader("Upload Cat Image", type=["jpg","jpeg","png"])
+    audio_file = st.file_uploader("Upload Cat Audio", type=["wav","mp3"])
 
     if st.button("Detect Emotion"):
 
@@ -137,26 +141,24 @@ if menu == "Predict":
         else:
             with st.spinner("Analyzing"):
 
-                final_emotion = None
+                img_emotion = None
+                aud_emotion = None
 
                 if image_file:
                     img = preprocess_image(image_file)
                     img_pred = image_model.predict(img)[0]
-                    final_emotion = IMAGE_CLASSES[np.argmax(img_pred)]
+                    img_emotion = IMAGE_CLASSES[np.argmax(img_pred)]
 
                 if audio_file:
                     aud = preprocess_audio(audio_file)
                     aud_pred = audio_model.predict(aud)[0]
-                    final_emotion = AUDIO_CLASSES[np.argmax(aud_pred)]
+                    aud_emotion = AUDIO_CLASSES[np.argmax(aud_pred)]
 
-            st.markdown(f"""
-            <div class="result-box">
-            {final_emotion}
-            </div>
-            """, unsafe_allow_html=True)
+            if img_emotion:
+                st.markdown(f"<div class='result-box'>Image Emotion: {img_emotion}</div>", unsafe_allow_html=True)
 
-    st.image("https://images.unsplash.com/photo-1518791841217-8f162f1e1131", use_column_width=True)
-
+            if aud_emotion:
+                st.markdown(f"<div class='result-box'>Audio Emotion: {aud_emotion}</div>", unsafe_allow_html=True)
 
 
 
