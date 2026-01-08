@@ -3,101 +3,96 @@ import tensorflow as tf
 import numpy as np
 import librosa
 from PIL import Image
+import base64
 
+# ------------------ PAGE CONFIG ------------------
 st.set_page_config(
-    page_title="Cat Emotion Detector",
-    page_icon="https://img.icons8.com/?size=100&id=9woxisYy4uwE&format=png&color=000000",
+    page_title="PAWMOOD – Know Your Cat",
+    page_icon="assetscat_icon.png.png",
     layout="centered"
 )
 
-# ------------------ DARK THEME ------------------
-st.markdown("""
+# ------------------ LOAD IMAGES ------------------
+def load_bg(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
+paw_bg = load_bg("assetspaw.png.png")
+cat_icon = load_bg("assetscat_icon.png.png")
+
+# ------------------ CSS ------------------
+st.markdown(f"""
 <style>
-.stApp {
-    background: linear-gradient(180deg, #0B0B14, #14142B);
-    color: white;
-}
+.stApp {{
+    background: linear-gradient(135deg, #FFF1C1, #FFD6E8);
+    background-image: url("data:image/png;base64,{paw_bg}");
+    background-repeat: repeat;
+    background-size: 160px;
+}}
 
-[data-testid="stSidebar"] {
-    background-color: #0F0F1E;
-}
+[data-testid="stSidebar"] {{
+    background: linear-gradient(180deg, #FFB7D5, #FFE9F2);
+}}
 
-.card {
-    background: linear-gradient(145deg, #1C1C3A, #101022);
-    padding: 28px;
-    border-radius: 18px;
-    box-shadow: 0px 10px 30px rgba(0,0,0,0.6);
-    margin-bottom: 25px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
+h1, h2, h3, p, label {{
+    color: #2B1B2E;
+    font-family: 'Trebuchet MS', sans-serif;
+}}
 
-.square {
-    background: linear-gradient(135deg, #7F5AF0, #2CB67D);
-    width: 160px;
-    height: 160px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 700;
-    color: white;
-    text-align: center;
-    margin: 10px auto;
-}
+.logo {{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    font-size:48px;
+    font-weight:900;
+    color:#6A0572;
+}}
 
-.result-box {
-    background: linear-gradient(135deg, #2B2B5E, #1B1B38);
+.card {{
+    background: white;
     padding: 30px;
     border-radius: 18px;
-    border-left: 8px solid #7F5AF0;
-    font-size: 26px;
-    font-weight: 800;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.15);
+    margin-bottom: 25px;
+}}
+
+.upload-box {{
+    background: linear-gradient(135deg, #FFF6FB, #FFE4F1);
+    border-radius: 18px;
+    padding: 25px;
+    border: 2px dashed #FF9ACB;
+    text-align:center;
+    font-weight:700;
+    color:#7A1F57;
+}}
+
+.result-box {{
+    background: linear-gradient(135deg, #FFB6D9, #FFD9EC);
+    padding: 30px;
+    border-radius: 20px;
+    font-size: 30px;
+    font-weight: 900;
     text-align: center;
-    color: #FFFFFF;
-    animation: pop 0.4s ease-out;
-    margin-top: 15px;
-}
+    color: #4B0035;
+    animation: pop 0.35s ease-out;
+    box-shadow: 0px 10px 20px rgba(0,0,0,0.25);
+}}
 
-@keyframes pop {
-  0% {transform: scale(0.7); opacity: 0;}
-  100% {transform: scale(1); opacity: 1;}
-}
+@keyframes pop {{
+  0% {{transform: scale(0.7); opacity: 0;}}
+  100% {{transform: scale(1); opacity: 1;}}
+}}
 
-.stButton>button {
-    background: linear-gradient(135deg, #7F5AF0, #2CB67D);
-    color: white;
-    border-radius: 12px;
+.stButton>button {{
+    background: linear-gradient(135deg, #FF7EB3, #FFB347);
+    color: #2B1B2E;
+    border-radius: 14px;
     padding: 14px 28px;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 800;
     border: none;
-}
-
-.icon-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.cat-icon {
-    width: 28px;
-}
-
-.cat-bg {
-    position: fixed;
-    opacity: 0.06;
-    z-index: 0;
-}
-
-.cat1 { top: 40px; left: 30px; width: 70px; }
-.cat2 { bottom: 50px; right: 40px; width: 80px; }
-.cat3 { top: 50%; right: 20px; width: 50px; }
+}}
 </style>
-
-<img src="https://img.icons8.com/ios-filled/100/ffffff/cat.png" class="cat-bg cat1">
-<img src="https://img.icons8.com/ios/100/ffffff/cat-footprint.png" class="cat-bg cat2">
-<img src="https://img.icons8.com/ios/100/ffffff/pet-commands.png" class="cat-bg cat3">
 """, unsafe_allow_html=True)
 
 # ------------------ MODELS ------------------
@@ -125,31 +120,26 @@ menu = st.sidebar.radio("Navigation", ["Home", "Predict", "About"])
 
 # ------------------ HOME ------------------
 if menu == "Home":
-    st.title("Cat Emotion Detector")
-
-    st.markdown("""
-    <div class="card">
-    This AI system understands how a cat feels by analyzing images and sounds.
-    Cats cannot speak, but their face and voice reveal emotions.
-    This platform helps cat owners recognize happiness, fear, pain, or stress early.
+    st.markdown(f"""
+    <div class="logo">
+        <img src="data:image/png;base64,{cat_icon}" width="70">
+        PAWMOOD
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.markdown("<div class='square'>Pet emotions are valid</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='square'>AI for animal care</div>", unsafe_allow_html=True)
-    with col3:
-        st.markdown("<div class='square'>Understand your cat</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="card">
+    <h3>Know your cat’s mood using AI</h3>
+    Cats express emotions through face and voice. PAWMOOD uses deep learning to understand what your cat is feeling — happiness, fear, stress or pain.
+    </div>
+    """, unsafe_allow_html=True)
 
 # ------------------ PREDICT ------------------
 if menu == "Predict":
 
-    st.title("Detect Emotion")
+    st.title("Emotion Detection")
 
-    st.markdown("<div class='card'>Upload a cat image or audio to analyze emotions.</div>", unsafe_allow_html=True)
+    st.markdown("<div class='upload-box'>Upload a cat image or audio — PAWMOOD is excited to understand your cat</div>", unsafe_allow_html=True)
 
     image_file = st.file_uploader("Upload Cat Image", type=["jpg","jpeg","png"])
     audio_file = st.file_uploader("Upload Cat Audio", type=["wav","mp3"])
@@ -157,48 +147,45 @@ if menu == "Predict":
     if st.button("Detect Emotion"):
 
         if not image_file and not audio_file:
-            st.warning("Upload at least one file")
+            st.warning("Please upload at least one file")
         else:
-            with st.spinner("Analyzing"):
+            img_emotion = None
+            aud_emotion = None
 
-                img_emotion = None
-                aud_emotion = None
+            if image_file:
+                img = preprocess_image(image_file)
+                pred = image_model.predict(img)[0]
+                img_emotion = IMAGE_CLASSES[np.argmax(pred)]
 
-                if image_file:
-                    img = preprocess_image(image_file)
-                    img_pred = image_model.predict(img)[0]
-                    img_emotion = IMAGE_CLASSES[np.argmax(img_pred)]
-
-                if audio_file:
-                    aud = preprocess_audio(audio_file)
-                    aud_pred = audio_model.predict(aud)[0]
-                    aud_emotion = AUDIO_CLASSES[np.argmax(aud_pred)]
+            if audio_file:
+                aud = preprocess_audio(audio_file)
+                pred = audio_model.predict(aud)[0]
+                aud_emotion = AUDIO_CLASSES[np.argmax(pred)]
 
             if img_emotion:
-                st.markdown(f"<div class='result-box'>Image Emotion: {img_emotion}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result-box'>IMAGE EMOTION<br>{img_emotion}</div>", unsafe_allow_html=True)
 
             if aud_emotion:
-                st.markdown(f"<div class='result-box'>Audio Emotion: {aud_emotion}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result-box'>AUDIO EMOTION<br>{aud_emotion}</div>", unsafe_allow_html=True)
 
 # ------------------ ABOUT ------------------
 if menu == "About":
-    st.title("About This Project")
+
+    st.title("About PAWMOOD")
 
     st.markdown("""
     <div class="card">
-    This Cat Emotion Detection system was developed by Madhumithaa D K.
-    It uses deep learning models trained on cat image and audio datasets
-    to recognize emotional states such as happiness, fear, pain, aggression, and calmness.
+    <h3>Why PAWMOOD?</h3>
+    PAWMOOD was built to help cat owners understand their pets better. Many cats suffer silently — their emotions are hidden in expressions and sounds. This system uses AI to detect those feelings early.
+    
+    <h3>Technology</h3>
+    • TensorFlow deep learning models  
+    • CNN for facial emotion detection  
+    • MFCC + Neural Networks for sound emotion  
+    • Streamlit web platform  
+    
+    <h3>Built by</h3>
+    Madhumithaa D K  
+    AI & Machine Learning Engineer  
     </div>
     """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div class="card">
-    Technologies used include TensorFlow for model training,
-    Librosa for audio processing,
-    and Streamlit for the interactive web application.
-    The goal is to support cat owners and veterinarians
-    by providing early insight into a cat’s emotional health.
-    </div>
-    """, unsafe_allow_html=True)
-
