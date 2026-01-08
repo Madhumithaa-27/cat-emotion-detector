@@ -39,7 +39,7 @@ st.markdown("""
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: white;
     text-align: center;
@@ -74,10 +74,30 @@ st.markdown("""
     border: none;
 }
 
-h1, h2, h3, p {
-    color: white;
+.icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
+
+.cat-icon {
+    width: 28px;
+}
+
+.cat-bg {
+    position: fixed;
+    opacity: 0.06;
+    z-index: 0;
+}
+
+.cat1 { top: 40px; left: 30px; width: 70px; }
+.cat2 { bottom: 50px; right: 40px; width: 80px; }
+.cat3 { top: 50%; right: 20px; width: 50px; }
 </style>
+
+<img src="https://img.icons8.com/ios-filled/100/ffffff/cat.png" class="cat-bg cat1">
+<img src="https://img.icons8.com/ios/100/ffffff/cat-footprint.png" class="cat-bg cat2">
+<img src="https://img.icons8.com/ios/100/ffffff/pet-commands.png" class="cat-bg cat3">
 """, unsafe_allow_html=True)
 
 # ------------------ MODELS ------------------
@@ -101,7 +121,7 @@ def preprocess_audio(file):
     return np.expand_dims(mfcc, axis=(0,1))
 
 # ------------------ NAV ------------------
-menu = st.sidebar.radio("Navigation", ["Home", "Predict"])
+menu = st.sidebar.radio("Navigation", ["Home", "Predict", "About"])
 
 # ------------------ HOME ------------------
 if menu == "Home":
@@ -159,3 +179,26 @@ if menu == "Predict":
 
             if aud_emotion:
                 st.markdown(f"<div class='result-box'>Audio Emotion: {aud_emotion}</div>", unsafe_allow_html=True)
+
+# ------------------ ABOUT ------------------
+if menu == "About":
+    st.title("About This Project")
+
+    st.markdown("""
+    <div class="card">
+    This Cat Emotion Detection system was developed by Madhumithaa D K.
+    It uses deep learning models trained on cat image and audio datasets
+    to recognize emotional states such as happiness, fear, pain, aggression, and calmness.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="card">
+    Technologies used include TensorFlow for model training,
+    Librosa for audio processing,
+    and Streamlit for the interactive web application.
+    The goal is to support cat owners and veterinarians
+    by providing early insight into a cat’s emotional health.
+    </div>
+    """, unsafe_allow_html=True)
+
