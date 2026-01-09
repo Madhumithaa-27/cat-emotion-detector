@@ -23,16 +23,12 @@ cat_icon = load_bg("assetscat_icon.png.png")
 # ------------------ CSS ------------------
 st.markdown(f"""
 <style>
-.stApp {
-    background-color: #FFF7C2;   /* Soft yellow base */
-    background-image: 
-        url("data:image/png;base64,{paw_bg}"),
-        linear-gradient(135deg, #FFF7C2, #FFE4F1);
-    background-repeat: repeat, no-repeat;
-    background-size: 180px, cover;
-    background-blend-mode: multiply;
-}
-
+.stApp {{
+    background-color: #FFF7C2;
+    background-image: url("data:image/png;base64,{paw_bg}");
+    background-repeat: repeat;
+    background-size: 180px;
+}}
 
 [data-testid="stSidebar"] {{
     background: linear-gradient(180deg, #FFB7D5, #FFE9F2);
@@ -78,13 +74,7 @@ h1, h2, h3, p, label {{
     font-weight: 900;
     text-align: center;
     color: #4B0035;
-    animation: pop 0.35s ease-out;
     box-shadow: 0px 10px 20px rgba(0,0,0,0.25);
-}}
-
-@keyframes pop {{
-  0% {{transform: scale(0.7); opacity: 0;}}
-  100% {{transform: scale(1); opacity: 1;}}
 }}
 
 .stButton>button {{
@@ -181,13 +171,13 @@ if menu == "About":
     <div class="card">
     <h3>Why PAWMOOD?</h3>
     PAWMOOD was built to help cat owners understand their pets better. Many cats suffer silently — their emotions are hidden in expressions and sounds. This system uses AI to detect those feelings early.
-    
+
     <h3>Technology</h3>
     • TensorFlow deep learning models  
     • CNN for facial emotion detection  
     • MFCC + Neural Networks for sound emotion  
     • Streamlit web platform  
-    
+
     <h3>Built by</h3>
     Madhumithaa D K  
     AI & Machine Learning Engineer  
