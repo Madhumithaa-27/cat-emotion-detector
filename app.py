@@ -180,6 +180,6 @@ if menu == "About":
 
     <h3>Built by</h3>
     Madhumithaa D K  
-    AI & Machine Learning Engineer  
+    
     </div>
     """, unsafe_allow_html=True)
