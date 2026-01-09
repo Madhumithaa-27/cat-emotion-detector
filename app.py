@@ -3,137 +3,136 @@ import tensorflow as tf
 import numpy as np
 import librosa
 from PIL import Image
-import base64
 
-# ------------------ PAGE CONFIG ------------------
-st.set_page_config(
-    page_title="PAWMOOD – Know Your Cat",
-    page_icon="assetscat_icon.png.png",
-    layout="centered"
-)
+# ----------------------------
+# App config
+# ----------------------------
+st.set_page_config(page_title="PAWMOOD", layout="centered")
 
-# ------------------ LOAD IMAGES ------------------
-def load_bg(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
+# ----------------------------
+# Load models
+# ----------------------------
+@st.cache_resource
+def load_models():
+    img = tf.keras.models.load_model("cat_image_model.keras")
+    aud = tf.keras.models.load_model("cat_audio_model.keras")
+    return img, aud
 
-paw_bg = load_bg("assetspaw.png.png")
-cat_icon = load_bg("assetscat_icon.png.png")
+img_model, aud_model = load_models()
 
-# ------------------ CSS ------------------
-st.markdown(f"""
+# ----------------------------
+# CSS
+# ----------------------------
+st.markdown("""
 <style>
-.stApp {{
-    background:
-        linear-gradient(rgba(255,247,200,0.95), rgba(255,235,200,0.95)),
-        url("data:image/png;base64,{paw_bg}");
-    background-repeat: repeat;
-    background-size: 150px;
-    color:#2B1B2E;
-}}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
 
-[data-testid="stSidebar"] {{
-    background: linear-gradient(180deg, #FFD1E8, #FFE9F3);
-}}
+body, .stApp {
+    background: radial-gradient(circle at top, #1a0033, #000);
+    color: white;
+}
 
-h1, h2, h3, p, label {{
-    color: #2B1B2E;
-    font-family: 'Trebuchet MS', sans-serif;
-}}
+.title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 64px;
+    text-align: center;
+    color: #b38bff;
+    letter-spacing: 3px;
+}
 
-.logo {{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    font-size:52px;
-    font-weight:900;
-    color:#6A0572;
-    background: linear-gradient(135deg,#FFD86B,#FF9ACB);
-    padding: 18px 40px;
-    border-radius: 22px;
-    box-shadow:0px 10px 25px rgba(0,0,0,0.25);
-}}
+.subtitle {
+    text-align: center;
+    font-size: 18px;
+    color: #d1c4ff;
+}
 
-.card {{
-    background: rgba(255,255,255,0.97);
-    padding: 35px;
-    border-radius: 22px;
-    box-shadow: 0px 15px 30px rgba(0,0,0,0.18);
-    margin-bottom: 30px;
-}}
+.upload-box {
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 25px;
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+    margin-top: 20px;
+}
 
-.upload-box {{
-    background: linear-gradient(135deg, #FFF7FB, #FFE4F1);
+.pred-box {
+    background: linear-gradient(135deg, #2b0040, #140020);
     border-radius: 20px;
     padding: 30px;
-    border: 2px dashed #FF9ACB;
-    text-align:center;
-    font-weight:700;
-    color:#7A1F57;
-}}
-
-.result-box {{
-    background: linear-gradient(135deg, #FFD86B, #FF9ACB);
-    padding: 32px;
-    border-radius: 22px;
-    font-size: 32px;
-    font-weight: 900;
     text-align: center;
-    color:#4B0035;
-    animation: pop 0.35s ease-out;
-    box-shadow:0px 12px 25px rgba(0,0,0,0.25);
-}}
-
-@keyframes pop {{
-  0% {{transform: scale(0.7); opacity: 0;}}
-  100% {{transform: scale(1); opacity: 1;}}
-}}
-
-.stButton>button {{
-    background: linear-gradient(135deg,#FF7EB3,#FFD86B);
-    color:#4B0035;
-    border-radius: 14px;
-    padding: 14px 30px;
-    font-size: 16px;
-    font-weight:800;
-    border:none;
-}}
+    font-size: 28px;
+    margin-top: 30px;
+    border: 1px solid #b38bff;
+}
 </style>
 """, unsafe_allow_html=True)
 
-# ------------------ MODELS ------------------
-image_model = tf.keras.models.load_model("cat_image_model.keras")
-audio_model = tf.keras.models.load_model("cat_audio_model.keras")
+# ----------------------------
+# Header
+# ----------------------------
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.image("assetspaw.png.png", width=90)
 
-IMAGE_CLASSES = ['Happy','Sad','Angry','Surprised','Scared','Disgusted','Normal']
-AUDIO_CLASSES = ['Happy','Angry','Paining','Resting','Warning','Fighting','Mating','Defense','HuntingMind','MotherCall']
+st.markdown('<div class="title">PAWMOOD</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Can’t wait to detect your cat’s emotion in voice</div>', unsafe_allow_html=True)
 
-# ------------------ PREPROCESS ------------------
-def preprocess_image(file):
-    img = Image.open(file).convert("RGB")
+# ----------------------------
+# Mode
+# ----------------------------
+mode = st.radio("Detection Mode", ["Image only", "Audio only", "Image + Audio"], horizontal=True)
+
+st.markdown('<div class="upload-box">', unsafe_allow_html=True)
+
+img_file = None
+aud_file = None
+
+if mode in ["Image only", "Image + Audio"]:
+    img_file = st.file_uploader("Upload Cat Image", type=["jpg","png","jpeg"])
+
+if mode in ["Audio only", "Image + Audio"]:
+    aud_file = st.file_uploader("Upload Cat Voice", type=["wav","mp3"])
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ----------------------------
+# Preprocess
+# ----------------------------
+def prep_image(img):
     img = img.resize((224,224))
-    img = np.array(img) / 255.0
+    img = np.array(img)/255.0
     return np.expand_dims(img, axis=0)
 
-def preprocess_audio(file):
-    y, sr = librosa.load(file, sr=16000)
+def prep_audio(aud):
+    y, sr = librosa.load(aud, duration=3)
     mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=40)
     mfcc = np.mean(mfcc.T, axis=0)
-    return np.expand_dims(mfcc, axis=(0,1))
+    return np.expand_dims(mfcc, axis=0)
 
-# ------------------ NAV ------------------
-menu = st.sidebar.radio("Navigation", ["Home", "Predict", "About"])
+labels = ["Happy", "Angry", "Sad", "Relaxed"]
 
-# ------------------ HOME ------------------
-if menu == "Home":
-    st.markdown(f"""
-    <div class="logo">
-        <img src="data:image/png;base64,{cat_icon}" width="60">
-        PAWMOOD
-    </div>
-    """, unsafe_allow_html=True)
+# ----------------------------
+# Predict
+# ----------------------------
+if st.button("Detect Mood"):
+    preds = []
 
-    st.markdown("""
-    <div class="card">
-    <h3>Know your cat’s mood using AI</h3>
-    Cats express emotions through face and voice. PAWMOOD uses deep learning to unders
+    if img_file:
+        image = Image.open(img_file)
+        st.image(image, width=250)
+        img_input = prep_image(image)
+        p = img_model.predict(img_input)[0]
+        preds.append(p)
+
+    if aud_file:
+        aud_input = prep_audio(aud_file)
+        p = aud_model.predict(aud_input)[0]
+        preds.append(p)
+
+    if preds:
+        final = np.mean(preds, axis=0)
+        mood = labels[np.argmax(final)]
+
+        st.markdown(f'<div class="pred-box">{mood}</div>', unsafe_allow_html=True)
+
+        st.image("assetscat_icon.png.png", width=80)
